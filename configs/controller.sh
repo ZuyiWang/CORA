@@ -1,6 +1,7 @@
 exp=${1:-'test'}
 gpu=${2:-'8'}
 type=${3:-'local'} # choose slurm if you are running on a cluster with slurm scheduler
+data_path='/home/wangzy/ObjectDetectionModel/CORA/data/coco'
 
 if [ "$type" == 'local' ]; then
   extra_args=${@:4:99}

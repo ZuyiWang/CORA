@@ -51,6 +51,8 @@ def train_one_epoch(model: torch.nn.Module,
     else:
         print_freq = 100
 
+    # 梯度累积
+    grad_accum_count = 0
     _cnt = 0
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
         samples = samples.to(device)
@@ -138,6 +140,25 @@ def train_one_epoch(model: torch.nn.Module,
             print(loss_dict_reduced)
             sys.exit(1)
 
+        # if args.use_gradient_accumulation:
+        #     losses = losses / args.accumulation_steps  # 将损失缩放
+        #     # 只有在首次 step 时清零梯度
+        #     if grad_accum_count == 0:
+        #         optimizer.zero_grad() 
+        #     losses.backward()
+        #     grad_accum_count += 1
+        #     if grad_accum_count == args.accumulation_steps:
+        #         if max_norm > 0:
+        #             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+        #         optimizer.step()
+        #         optimizer.zero_grad()  # 清空梯度
+        #         grad_accum_count = 0   # 重置计数器
+        # else:
+        #     optimizer.zero_grad()
+        #     losses.backward()
+        #     if max_norm > 0:
+        #         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+        #     optimizer.step()
         optimizer.zero_grad()
         losses.backward()
 

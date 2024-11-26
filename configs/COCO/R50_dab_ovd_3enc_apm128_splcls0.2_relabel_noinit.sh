@@ -1,6 +1,12 @@
 name=$0
 . configs/controller.sh
 
+# --batch_size 4 \
+# --num_queries 1000 \
+# --dec_layers 6 \
+# --use_gradient_accumulation \
+# --accumulation_steps 4 \
+# --use_deformable_attention
 args=" \
 --coco_path $data_path \
 --output_dir $work_dir \
@@ -31,3 +37,5 @@ args=" \
 "
 
 eval "$header$args$extra_args 2>&1 | tee -a $work_dir/exp_$now.txt"
+# for pdb debug
+# eval "$header$args$extra_args"

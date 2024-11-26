@@ -708,7 +708,7 @@ class SetCriterion(nn.Module):
             losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes))
 
         if 'split_class' not in outputs:
-            losses['matched_gt'] = torch.zeros_like(losses['loss_bbox']) + num_boxes / sum(len(t["labels"]) for t in targets)
+            losses['matched_gt'] = torch.zeros_like(losses['loss_bbox']) + num_boxes / (sum(len(t["labels"]) for t in targets) + 1) # batch=1时报错
 
         # In case of auxiliary losses, we repeat this process with the output of each intermediate layer.
         if 'aux_outputs' in outputs:

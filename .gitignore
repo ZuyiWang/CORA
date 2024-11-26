@@ -139,3 +139,5 @@ data/
 data
 cora_server_backup
 cora_server_backup/*
+
+ori_checkpoints/*

@@ -170,6 +170,9 @@ def get_args_parser():
     parser.add_argument('--world_size', default=1, type=int, help='number of distributed processes')
     parser.add_argument('--dist_url', default='env://', help='url used to set up distributed training')
 
+    # 梯度累积
+    parser.add_argument('--accumulation_steps', default=0, type=int, help='gradient accumulation steps')
+    parser.add_argument('--use_gradient_accumulation', action='store_true')
     return parser
 
 def _load_checkpoint_for_ema(model_ema, checkpoint):
