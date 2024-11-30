@@ -7,7 +7,7 @@ name=$0
 # --use_gradient_accumulation \
 # --accumulation_steps 4 \
 # --use_deformable_attention
-# --use_dino \
+# --use_dino
 args=" \
 --coco_path $data_path \
 --output_dir $work_dir \
@@ -25,7 +25,7 @@ args=" \
 --anchor_pre_matching \
 --remove_misclassified \
 --condition_on_text \
---enc_layers 3 \
+--enc_layers 6 \
 --text_dim 1024 \
 --condition_bottleneck 128 \
 --split_class_p 0.2 \
@@ -35,6 +35,8 @@ args=" \
 --label_version RN50base \
 --disable_init \
 --target_class_factor 8 \
+--use_dino \
+--amp \
 "
 
 # eval "$header$args$extra_args 2>&1 | tee -a $work_dir/exp_$now.txt"
