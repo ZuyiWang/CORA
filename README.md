@@ -1,3 +1,4 @@
+# Fork from 
 # CORA: Adapting CLIP for Open-Vocabulary Detection with Region Prompting and Anchor Pre-Matching
 
 This is the official PyTorch implementation of CORA (CVPR 2023).
