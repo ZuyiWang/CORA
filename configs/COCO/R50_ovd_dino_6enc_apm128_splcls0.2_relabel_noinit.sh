@@ -39,6 +39,6 @@ args=" \
 --amp \
 "
 
-# eval "$header$args$extra_args 2>&1 | tee -a $work_dir/exp_$now.txt"
+eval "$header$args$extra_args 2>&1 | tee -a $work_dir/exp_$now.txt"
 ####### for pdb debug
-eval "$header$args$extra_args"
+# eval "$header$args$extra_args"

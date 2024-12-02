@@ -21,6 +21,7 @@ from datasets import build_dataset, get_coco_api_from_dataset, DistributedWeight
 from engine import evaluate, train_one_epoch, lvis_evaluate
 from models import build_model
 from timm.utils import get_state_dict
+from util.slconfig import SLConfig
 
 def get_args_parser():
     parser = argparse.ArgumentParser('CORA: Adapting CLIP for Open-Vocabulary Detection with Region Prompting and Anchor Pre-Matching', add_help=False)
@@ -173,6 +174,11 @@ def get_args_parser():
     # 梯度累积
     parser.add_argument('--accumulation_steps', default=0, type=int, help='gradient accumulation steps')
     parser.add_argument('--use_gradient_accumulation', action='store_true')
+    # OV DINO
+    parser.add_argument('--use_dino', action='store_true', help='use OV-DINO')
+    parser.add_argument("--dino_cfg", default='/home/wangzy/ObjectDetectionModel/CORA/configs/ovdino.py', type=str, help='OV-DINO config file')
+    parser.add_argument("--analysis", action="store_true", help="whether to analysis the model result")
+    parser.add_argument("--amp", action="store_true", help="Train with mixed precision")
     return parser
 
 def _load_checkpoint_for_ema(model_ema, checkpoint):
@@ -193,6 +199,19 @@ def main(args):
 
     device = torch.device(args.device)
 
+    if args.use_dino:
+        cfg = SLConfig.fromfile(args.dino_cfg)
+        cfg_dict = cfg._cfg_dict.to_dict()
+        args_vars = vars(args)
+        for k, v in cfg_dict.items():
+            if k not in args_vars:
+                setattr(args, k, v)
+            else:
+                # raise ValueError("Key {} can used by args only".format(k))
+                # cfg中的value替换
+                setattr(args, k, v)
+                print("Key {} is updated to {} by dino config file".format(k, v))
+        
     # fix the seed for reproducibility
     seed = args.seed + utils.get_rank()
     torch.manual_seed(seed)
@@ -254,7 +273,11 @@ def main(args):
         }
     ]
 
-    optimizer = torch.optim.AdamW(param_dicts, lr=args.lr, weight_decay=args.weight_decay)
+    if args.amp:
+        eps = 1e-6
+    else:
+        eps = 1e-8
+    optimizer = torch.optim.AdamW(param_dicts, lr=args.lr, weight_decay=args.weight_decay, eps=eps)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, args.lr_drop)
     
     dataset_val = build_dataset(image_set='val', args=args)

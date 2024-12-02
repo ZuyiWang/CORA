@@ -40,6 +40,7 @@ def train_one_epoch(model: torch.nn.Module,
                     max_norm: float = 0,
                     args=None,
                     model_ema=None):
+    scaler = torch.cuda.amp.GradScaler(enabled=args.amp)
     model.train()
     criterion.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -110,22 +111,27 @@ def train_one_epoch(model: torch.nn.Module,
                 for target in targets:
                     target['matching_threshold'] = args.matching_threshold
                 
+        if args.use_dino:
+            split_class = False
+        else:
+            split_class = generate_deterministic_rand(_cnt) < args.split_class_p
+            if split_class:
+                targets = [*deepcopy(targets), *deepcopy(targets)]
 
-        split_class = generate_deterministic_rand(_cnt) < args.split_class_p
-        if split_class:
-            targets = [*deepcopy(targets), *deepcopy(targets)]
-        outputs = model(samples, categories=used_categories, gt_classes=gt_classes, split_class=split_class, targets=targets)
+        with torch.cuda.amp.autocast(enabled=args.amp):
+            outputs = model(samples, categories=used_categories, 
+                            gt_classes=gt_classes, split_class=split_class,
+                            targets=targets)
 
-        # hard code for class agnostic training
-        if not args.end2end:
-            for target in targets:
-                target['ori_labels'] = target['labels']
-                target['labels'] = target['labels'] - target['labels']
-            
-        loss_dict = criterion(outputs, targets)
-        weight_dict = criterion.weight_dict
-        
-        losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
+            # hard code for class agnostic training
+            if not args.end2end:
+                for target in targets:
+                    target['ori_labels'] = target['labels']
+                    target['labels'] = target['labels'] - target['labels']
+                
+            loss_dict = criterion(outputs, targets)
+            weight_dict = criterion.weight_dict
+            losses = sum(loss_dict[k] * weight_dict[k] for k in loss_dict.keys() if k in weight_dict)
 
         # reduce losses over all GPUs for logging purposes
         loss_dict_reduced = utils.reduce_dict(loss_dict)
@@ -159,12 +165,29 @@ def train_one_epoch(model: torch.nn.Module,
         #     if max_norm > 0:
         #         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
         #     optimizer.step()
-        optimizer.zero_grad()
-        losses.backward()
+        # optimizer.zero_grad()
+        # losses.backward()
 
-        if max_norm > 0:
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
-        optimizer.step()
+        # if max_norm > 0:
+        #     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+        # optimizer.step()
+
+        # amp backward function
+        if args.amp:
+            optimizer.zero_grad()
+            scaler.scale(losses).backward()
+            if max_norm > 0:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+            scaler.step(optimizer)
+            scaler.update()
+        else:
+            # original backward function
+            optimizer.zero_grad()
+            losses.backward()
+            if max_norm > 0:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+            optimizer.step()
 
         torch.cuda.synchronize()
         if model_ema is not None:
@@ -227,7 +250,7 @@ def evaluate(model, criterion, postprocessors, data_loader, base_ds, device, out
             )
 
     if args.debug or utils.get_world_size() == 1:
-        print_freq = 10
+        print_freq = 100
     else:
         print_freq = 100
     _cnt = 0

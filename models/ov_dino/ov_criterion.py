@@ -91,7 +91,6 @@ class OVSetCriterion(nn.Module):
         target_classes_onehot.scatter_(2, target_classes.unsqueeze(-1), 1)
         target_classes_onehot = target_classes_onehot[:, :, :-1]
         
-        import pdb; pdb.set_trace()
         loss_ce = sigmoid_focal_loss(
             src_logits,
             target_classes_onehot,
@@ -174,7 +173,6 @@ class OVSetCriterion(nn.Module):
              targets: list of dicts, such that len(targets) == batch_size.
                       The expected keys in each dict depends on the losses applied.
         """
-        import pdb; pdb.set_trace()
         outputs_without_aux = {k: v for k, v in outputs.items() if k != "aux_outputs"}
         device = next(iter(outputs.values())).device
         # Retrieve the matching between the outputs of the last layer and the targets
@@ -257,7 +255,6 @@ class OVSetCriterion(nn.Module):
             losses.update(l_dict)
         # !
         for loss in self.losses:
-            import pdb; pdb.set_trace()
             losses.update(self.get_loss(loss, outputs, targets, indices, num_boxes))
 
         if "aux_outputs" in outputs:

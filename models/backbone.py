@@ -200,6 +200,8 @@ def build_backbone(args):
         feature_layer = 'layer4'
     elif args.anchor_pre_matching:
         feature_layer = 'layer34'
+        if args.use_dino:
+            feature_layer = 'layer234'
     else:
         feature_layer = 'layer3'
     train_backbone = args.lr_backbone > 0

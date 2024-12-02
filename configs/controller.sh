@@ -1,14 +1,15 @@
 exp=${1:-'test'}
 gpu=${2:-'8'}
 type=${3:-'local'} # choose slurm if you are running on a cluster with slurm scheduler
+port=${4:-'29500'}
 data_path='/home/wangzy/ObjectDetectionModel/CORA/data/coco'
 
 if [ "$type" == 'local' ]; then
-  extra_args=${@:4:99}
+  extra_args=${@:5:99}
 else
-  quotatype=${4:-'auto'} # for slurm
-  partition=${5:-'1'} # for slurm
-  extra_args=${@:6:99}
+  quotatype=${5:-'auto'} # for slurm
+  partition=${6:-'1'} # for slurm
+  extra_args=${@:7:99}
 fi
 
 name=${name/#configs/logs}
@@ -25,7 +26,7 @@ fi
 
 if [ "$type" == 'local' ]; then
 
-  header="python -m torch.distributed.launch --nproc_per_node=${gpu} --use_env main.py "
+  header="python -m torch.distributed.launch --nproc_per_node=${gpu} --master_port=${port} --use_env main.py "
 
 else
 

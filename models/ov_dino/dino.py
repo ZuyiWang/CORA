@@ -340,7 +340,7 @@ class DINO(nn.Module):
                 dn_post_process(outputs_class, outputs_coord_list,
                                 dn_meta,self.aux_loss,self._set_aux_loss)
         out = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord_list[-1]}
-        import pdb; pdb.set_trace()
+        
         if self.aux_loss:
             out['aux_outputs'] = self._set_aux_loss(outputs_class, outputs_coord_list)
         
@@ -413,7 +413,6 @@ class DINO(nn.Module):
             final_outputs_class = final_outputs_class[:, :, :-1]
             final_outputs_class = inverse_sigmoid(final_outputs_class)
             out["pred_logits"] = final_outputs_class
-            import pdb; pdb.set_trace()
 
         return out
 

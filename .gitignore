@@ -141,3 +141,6 @@ cora_server_backup
 cora_server_backup/*
 
 ori_checkpoints/*
+# openai-clip
+src/*
+setup.py
