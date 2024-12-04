@@ -1,3 +1,8 @@
+# wild match for dn
+use_wildmatch = True
+pos_wildcard = 'foreground object of interest'
+# neg_wildcard = 'meaningless background object'
+
 decoder_layer_noise = False
 use_detached_boxes_dec_out = False
 unic_layers = 0

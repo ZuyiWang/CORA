@@ -208,6 +208,9 @@ def main(args):
                 setattr(args, k, v)
             else:
                 # raise ValueError("Key {} can used by args only".format(k))
+                if v == args_vars[k]:
+                    # cfg与args中参数相同
+                    continue
                 # cfg中的value替换
                 setattr(args, k, v)
                 print("Key {} is updated to {} by dino config file".format(k, v))
