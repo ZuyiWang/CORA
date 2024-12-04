@@ -144,3 +144,4 @@ ori_checkpoints/*
 # openai-clip
 src/*
 setup.py
+checkpoints/*

@@ -114,10 +114,14 @@ class OVDeformableTransformer(DeformableTransformer):
         #########################################################
         #  begin text queries assignment
         #########################################################
+        if self.args.use_wildmatch and self.training:
+            input_raw_text_feats = raw_text_feats[:-1]
+        else:
+            input_raw_text_feats = raw_text_feats
         classes_, query_features, query = self.text_query_assign(
             region_proposals=refpoint_embed_,
             raw_visual_feats=raw_visual_feats,
-            raw_text_feats=raw_text_feats,
+            raw_text_feats=input_raw_text_feats,
             targets=targets,
             backbone=backbone,
         )
