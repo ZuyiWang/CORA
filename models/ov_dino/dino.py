@@ -450,10 +450,10 @@ def build_dino(args):
     classifier = build_classifier(args)
 
     try:
-        match_unstable_error = args.match_unstable_error
+        # match_unstable_error = args.match_unstable_error # deprecated
         dn_labelbook_size = args.dn_labelbook_size
     except:
-        match_unstable_error = True
+        # match_unstable_error = True # deprecated
         raise ValueError("Not set dn_labelbook_size")
 
     try:

@@ -1,3 +1,6 @@
+###### copy from DINO https://github.com/IDEA-Research/DINO DINO_5scale.py
+###### modify for OV DINO
+# epochs = 12
 decoder_layer_noise = False
 use_detached_boxes_dec_out = False
 unic_layers = 0
