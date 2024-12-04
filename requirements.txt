@@ -9,3 +9,5 @@ pandas
 nltk
 tqdm
 ftfy
+addict
+yapf

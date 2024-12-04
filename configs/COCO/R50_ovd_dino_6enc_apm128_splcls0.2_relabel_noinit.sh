@@ -8,11 +8,12 @@ name=$0
 # --accumulation_steps 4 \
 # --use_deformable_attention
 # --use_dino
+# --epochs 35 \
 args=" \
 --coco_path $data_path \
 --output_dir $work_dir \
 --batch_size 4 \
---epochs 35 \
+--epochs 30 \
 --lr_drop 35 \
 --backbone clip_RN50 \
 --text_len 15 \
@@ -36,6 +37,7 @@ args=" \
 --disable_init \
 --target_class_factor 8 \
 --use_dino \
+--dino_cfg /home/wangzy/ObjectDetectionModel/CORA/configs/ovdino.py \
 --amp \
 "
 
