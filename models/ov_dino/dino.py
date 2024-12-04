@@ -255,6 +255,8 @@ class DINO(nn.Module):
             with torch.no_grad():
                 features, pos_embeds = self.backbone(samples)
         
+        if self.training and self.args.use_wildmatch:
+            categories.append(self.args.pos_wildcard) # add wildcard embed
         text_feature = self.classifier(categories)
         clip_features = [
             features[k] for k in features.keys() if k != "dense" and k != "layer4" # discard dense feature layer
@@ -298,7 +300,8 @@ class DINO(nn.Module):
                 # num_classes=self.num_classes,
                 num_classes=len(proj_text_feature),
                 text_embbeding=proj_text_feature,
-                label_enc_embbeding=self.label_enc
+                label_enc_embbeding=self.label_enc,
+                use_wildmatch=self.args.use_wildmatch
             )
         else:
             # assert targets is None ## 为什么要target为None
