@@ -20,6 +20,7 @@ from .position_encoding import build_position_encoding
 from models.clip.clip import _MODELS, _download, available_models, tokenize
 from models.clip.model import Transformer
 from models.clip.prompts import imagenet_templates
+import json
 
 class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
@@ -39,6 +40,7 @@ class Classifier(torch.nn.Module):
         else:
             self.cache = torch.load(classifier_cache)
         
+        self.descriptor_cache = {}
         if "clip" in name:
             name = name.replace('clip_', '')
             if name in _MODELS:
@@ -132,6 +134,33 @@ class Classifier(torch.nn.Module):
             for category, feat in zip(new_category, new_class_embedding):
                 self.cache[category] = feat.to('cpu')
         class_embedding = torch.stack([self.cache[category] for category in category_list]).to(self.positional_embedding.device)
+
+        return class_embedding
+
+    def get_descriptor(self, category_list, json_file):
+        new_category = [category for category in category_list if category not in self.descriptor_cache]
+        if len(new_category):
+            with open(json_file, 'r', encoding='utf-8') as f:
+                results=json.load(f)
+            with torch.no_grad():
+                texts = [results[category] for category in new_category] #format with class
+                # 太长的描述会被截断
+                texts = tokenize(texts, context_length=77, truncate=True).to(self.positional_embedding.device)
+                new_class_embeddings = []
+                cursor = 0
+                step = 3000
+                while cursor <= len(texts):
+                    new_class_embeddings.append(self.encode_text(texts[cursor:cursor + step]))
+                    cursor += step
+                new_class_embeddings = torch.cat(new_class_embeddings)
+                new_class_embeddings = new_class_embeddings / new_class_embeddings.norm(dim=-1, keepdim=True)
+                ##### one text per class
+                # new_class_embeddings = new_class_embeddings.unflatten(0, (len(category_list), 1))
+                # new_class_embeddings = new_class_embeddings.mean(dim=1)
+                # new_class_embeddings = new_class_embeddings / new_class_embeddings.norm(dim=-1, keepdim=True)
+                for category, feat in zip(new_category, new_class_embeddings):
+                    self.descriptor_cache[category] = feat.to('cpu')
+        class_embedding = torch.stack([self.descriptor_cache[category] for category in category_list]).to(self.positional_embedding.device)
 
         return class_embedding
 

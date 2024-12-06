@@ -255,9 +255,15 @@ class DINO(nn.Module):
             with torch.no_grad():
                 features, pos_embeds = self.backbone(samples)
         
-        if self.training and self.args.use_wildmatch:
-            categories.append(self.args.pos_wildcard) # add wildcard embed
-        text_feature = self.classifier(categories)
+        if self.args.use_text_desc:
+            text_feature = self.classifier.get_descriptor(categories, self.args.descriptor_json)
+            if self.training and self.args.use_wildmatch:
+                wild_feature = self.classifier([self.args.pos_wildcard]) # add wildcard embed
+                text_feature = torch.cat([text_feature, wild_feature])
+        else:  
+            if self.training and self.args.use_wildmatch:
+                categories.append(self.args.pos_wildcard) # add wildcard embed
+            text_feature = self.classifier(categories)
         clip_features = [
             features[k] for k in features.keys() if k != "dense" and k != "layer4" # discard dense feature layer
         ] 

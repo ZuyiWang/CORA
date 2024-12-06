@@ -5,6 +5,9 @@ use_wildmatch = True
 pos_wildcard = 'foreground object of interest'
 # neg_wildcard = 'meaningless background object'
 
+use_text_desc = True
+descriptor_json = '/mnt/irdc_rd/wangzuyi/CORA/generate_desc/descriptor_coco.json'
+text_len = 77
 # epochs = 12
 decoder_layer_noise = False
 use_detached_boxes_dec_out = False
